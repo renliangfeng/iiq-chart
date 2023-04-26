@@ -1,92 +1,69 @@
-# iiq-helm
+Deploy IdentityIQ to Kubernetes via Helm Chart
+================================
 
+# Summary
+In this example, we will demonstrate how to use Helm Chart to deploy the IdentityIQ docker image to a simulated Kubernetes cluster in Docker Desktop installed locally. 
 
+With some modification, this Helm Chart can be enchanced to support the Production-Ready Kubernetes cloud service (e.g. AWS EKS or Azure AKS).
 
-## Getting started
+# Prerequisites
+- **Install Docker Desktop**
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+  Refer to [https://www.docker.com/products/docker-desktop/](url)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+  Make sure Docker Desktop is running with **Kuberneters enabled**.
+- **Build IdentityIQ docker image** 
+  
+  Refer to [https://github.com/renliangfeng/iiq-docker](url)
 
-## Add your files
+- **Install local MySQL database**
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+  Refer to instruction from SailPoint IdentityIQ document.
+- **Publish IdentityIQ docker image**
+     
+  Once the IdentityIQ docker image is built, it needs to be pushed to the docker registry so that Helm Chart can pull the image and deploy it to Kubernates cluster (will be discussed in the following section). In this example, I will use a local docker registry solution that is inspired by the following website ([https://docs.docker.com/registry/deploying](url)). However if you want to use other registry, you just need to update the value of ***image:repository*** in the YAML file ***values.yaml***. Run the following command to create a local docker registry for the first time:
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.apps.ndia.gov.au/ocio/identity-access-management/iiq-helm.git
-git branch -M main
-git push -uf origin main
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
 ```
 
-## Integrate with your tools
+  Now run the following commands to tag the image
+```
+docker tag my-iiq-image localhost:5000/my-iiq-image:v1
+docker push localhost:5000/my-iiq-image:v1
+```
 
-- [ ] [Set up project integrations](https://gitlab.apps.ndia.gov.au/ocio/identity-access-management/iiq-helm/-/settings/integrations)
+# Run IdentityIQ in Kubernetes (Docker Desktop)
+## volumns & volumnMounts
+2 types of volumns are used in this solution: configMap and hostPath.
+### configMap
+To makes the IdentityIQ Docker image environment agnostic and portable, the docker built from the previous steps does not include ***iiq.properties*** file in the application folder. So we will need to mount the *iiq.properties* (or *log4j2.properties*) to the path defined in Kubernetes volumns via ConfigMap so that the application can access these files. These environment specific configuration files (such as *iiq.properties*, *log4j2.properties*) are stored under the subfolder (such as sandbox, dev, test etc.) of "*env*" folder. Configure the proper values of *iiq.properties* for the enviroment (we use sandbox in the demo) you are going to run. 
 
-## Collaborate with your team
+### hostPath
+The hostPath Volumn is used to mount the following 2 directories in the host to the corresponding mountPath defined in Kubernates:
+- **keystore**
+  
+   Create a new directory (e.g. */Users/bruce.ren/Desktop/share-config/sailpoint/keystore*) in local computer.
+   Then modify the file ***env/sandbox/values.yaml*** to update the corresponding field to reflect the location.
+- **log file directory** 
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+   Create a new directory (e.g. */Users/bruce.ren/Desktop/share-config/sailpoint/logs*) in local computer.
+   Then modify the file **env/sandbox/values.yaml** to update the corresponding field to reflect the location. Please note once this is configured, all the log files (both log4j and tomcat generated) will be written to this folder.
+For the first time, create the following 2 directories in local machine:
 
-## Test and Deploy
 
-Use the built-in continuous integration in GitLab.
+## Install Helm Chart
+Run the following command to deploy the IdentityIQ to Kubernetes cluster.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```
+./deploy.sh sandbox
+```
 
-***
+Run the following command to check if deployment is successful.
 
-# Editing this README
+```
+kubectl get pod --namespace=iiq
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+If deployment is successful, you should be able to access the application with the following URL:
+- [http://localhost/identityiq](url)
