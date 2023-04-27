@@ -4,7 +4,7 @@ Deploy IdentityIQ to Kubernetes via Helm Chart
 # Summary
 In this example, we will demonstrate how to use Helm Chart to deploy the IdentityIQ docker image to a simulated Kubernetes cluster in Docker Desktop installed locally. 
 
-With some modification, this Helm Chart can be enchanced to support the Production-Ready Kubernetes cloud service (e.g. AWS EKS or Azure AKS).
+With some modification, this Helm Chart can be enhanced to support the production-grade Kubernetes cloud service (e.g. AWS EKS or Azure AKS).
 
 # Prerequisites
 - **Install Docker Desktop**
