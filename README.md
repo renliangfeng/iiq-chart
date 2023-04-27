@@ -29,9 +29,11 @@ docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
   Now run the following commands to tag the image
 ```
-docker tag my-iiq-image localhost:5000/my-iiq-image:v1
-docker push localhost:5000/my-iiq-image:v1
+docker tag iiq-image localhost:5000/iiq-image:v1
+docker push localhost:5000/iiq-image:v1
 ```
+
+Note: you may have used a different image namen than iiq-image to build the docker image, or have a different docker registry. In either case, please update the above commands accordingly.
 
 # Run IdentityIQ in Kubernetes (Docker Desktop)
 ## volumns & volumnMounts

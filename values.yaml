@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   pullPolicy: IfNotPresent
   # registry: localhost:5000
-  repository: localhost:5000/my-iiq-image
+  repository: localhost:5000/iiq-image
   tag: v1
 
 # imagePullSecrets: []
