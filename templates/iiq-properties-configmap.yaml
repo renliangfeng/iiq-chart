@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iiq-properties
+data:
+  iiq.properties: |-
+{{ include "iiq.properties" . | indent 4 }}

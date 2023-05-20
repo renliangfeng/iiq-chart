@@ -1,66 +1,92 @@
+{{- range $type, $config := .Values.servers }}
+{{- with (merge (dict "serverType" $type "serverConfig" $config) $) }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "iiq-helm.fullname" . }}
-  labels:
-    {{- include "iiq-helm.labels" . | nindent 4 }}
+  name: {{ .Release.Name }}-{{ .serverType }}
+  labels: {{- include "podLabels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
-    matchLabels:
-      {{- include "iiq-helm.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "podLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      labels: {{- include "podLabels" . | nindent 8 }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "iiq-helm.selectorLabels" . | nindent 8 }}
+        # These checksum ensure that the pods restart when these configs are changed
+        # Otherwise those config changes will not be picked up automatically
+        checksum/properties: {{ include (print $.Template.BasePath "/iiq-properties-configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "iiq-helm.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      # This tries to ensure multiple pods with the same labels are spread
+      # evenly across our AZs.
+      {{- if .Values.spreadAZs.enabled }}
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels: {{ include "podLabels" . | nindent 12 }}
+      {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+        - name: identityiq
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.containers.containerPort }}
+              containerPort: {{ .Values.container.port }}
               protocol: TCP
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
-            {{- toYaml .Values.containers.securityContext | nindent 12 }}
-          env:
-            {{- toYaml .Values.containers.envVars | nindent 12 }}
-          livenessProbe:
-            {{- toYaml .Values.containers.livenessProbe | nindent 12 }}
+            runAsNonRoot: true
+            runAsUser: 1001
+          env: {{ toYaml .serverConfig.env | nindent 12 }}
           readinessProbe:
-            {{- toYaml .Values.containers.readinessProbe | nindent 12 }}
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: http
+              path: /
+            failureThreshold: 6
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
           volumeMounts:
-            {{- toYaml .Values.volumeMounts | nindent 12 }}
+            - name: iiq-properties
+              mountPath: /usr/local/tomcat/webapps/identityiq/WEB-INF/classes/iiq.properties
+              subPath: iiq.properties
+            - name: log4j2-properties
+              mountPath: /usr/local/tomcat/webapps/identityiq/WEB-INF/classes/log4j2.properties
+              subPath: log4j2.properties
+            - name: keystore
+              mountPath: {{ .Values.keystore.mountPath }}
+            - name: iiq-log-volume
+              mountPath: /usr/local/tomcat/logs
       volumes:
-        {{- toYaml .Values.volumes | nindent 8 }}
-            
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - name: iiq-properties
+          configMap:
+            name: iiq-properties
+        - name: log4j2-properties
+          configMap:
+            name: log4j2-properties
+        - name: keystore
+          hostPath: 
+          path: {{ .Values.keystore.hostPath }}
+          type: Directory
+        - name: iiq-log-volume
+          hostPath:
+          path: {{ .Values.log.hostPath }} 
+          type: Directory
+{{- end }}
+{{- end }}
