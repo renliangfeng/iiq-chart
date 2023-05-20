@@ -14,7 +14,7 @@ With some modification, this Helm Chart can be enhanced to support the productio
   Make sure Docker Desktop is running with **Kuberneters enabled**.
 - **Build IdentityIQ docker image** 
   
-  Refer to [https://github.com/renliangfeng/iiq-docker](url)
+  Refer to [https://github.com/renliangfeng/iiq-container](url)
 
 - **Install local MySQL database**
 
