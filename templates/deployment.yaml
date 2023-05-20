@@ -82,11 +82,11 @@ spec:
             name: log4j2-properties
         - name: keystore
           hostPath: 
-          path: {{ .Values.keystore.hostPath }}
-          type: Directory
+            path: {{ .Values.keystore.hostPath }}
+            type: Directory
         - name: iiq-log-volume
           hostPath:
-          path: {{ .Values.log.hostPath }} 
-          type: Directory
+            path: {{ .Values.log.hostPath }} 
+            type: Directory
 {{- end }}
 {{- end }}

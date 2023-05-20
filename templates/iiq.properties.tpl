@@ -54,8 +54,7 @@ pluginsDataSource.password={{.Values.pluginsDatabase.password}}
 pluginsDataSource.url={{.Values.pluginsDatabase.url}}?useSSL=false&useServerPrepStmts=true&tinyInt1isBit=true&useUnicode=true&characterEncoding=utf8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
 pluginsDataSource.driverClassName=com.mysql.cj.jdbc.Driver
 
-{{- if .Values.keystore.enabled }}
-keyStore.file={{ .Values.keystore.mountPath }}/iiq.dat
-keyStore.passwordFile={{ .Values.keystore.mountPath }}/iiq.cfg
-{{- end }}
+#keyStore.file={{ .Values.keystore.mountPath }}/iiq.dat
+#keyStore.passwordFile={{ .Values.keystore.mountPath }}/iiq.cfg
+
 {{- end }}
