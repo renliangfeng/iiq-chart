@@ -1,25 +1,34 @@
-volumes:
-  - name: iiq-prop-volume
-    configMap:
-      name: iiq-config
-  - name: log4j-prop-volume
-    configMap:
-      name: iiq-config
-  - name: keystore-volume
-    hostPath:
-      #To mount volumes using Kubernetes on Docker Desktop for Windows the path will be: /run/desktop/mnt/host/c/PATH_TO_FILE,
-      #Here, the mount folder in hosting Windows is:
-      #   C:/sailpoint/keystore
-      #In macOS or Linux, just use normal path
-      #path: /run/desktop/mnt/host/c/sailpoint/keystore
-      path: /Users/bruce.ren/Desktop/share-config/sailpoint/keystore
-      type: Directory
-  - name: iiq-log-volume
-    hostPath:
-      #To mount volumes using Kubernetes on Docker Desktop for Windows the path will be: /run/desktop/mnt/host/c/PATH_TO_FILE,
-      #Here, the mount folder in hosting Windows is:
-      #   C:/sailpoint/logs
-      #In macOS or Linux, just use normal path  
-      #path: /run/desktop/mnt/host/c/sailpoint/logs
-      path: /Users/bruce.ren/Desktop/share-config/sailpoint/logs
-      type: Directory
+image:
+  repository: localhost:5000/iiq-image
+  tag: v1
+
+keystore:
+  mountPath: /usr/local/keystore
+  #To mount volumes using Kubernetes on Docker Desktop for Windows the path will be: /run/desktop/mnt/host/c/PATH_TO_FILE,
+  #Here, the mount folder in hosting Windows is:
+  #   C:/sailpoint/keystore
+  #In macOS or Linux, just use normal path
+  #path: /run/desktop/mnt/host/c/sailpoint/keystore
+  hostPath: /Users/bruce.ren/Desktop/share-config/sailpoint/keystore
+  
+log:
+  #To mount volumes using Kubernetes on Docker Desktop for Windows the path will be: /run/desktop/mnt/host/c/PATH_TO_FILE,
+  #Here, the mount folder in hosting Windows is:
+  #   C:/sailpoint/logs
+  #In macOS or Linux, just use normal path  
+  #path: /run/desktop/mnt/host/c/sailpoint/logs
+  hostPath: /Users/bruce.ren/Desktop/share-config/sailpoint/logs
+
+service:
+  type: LoadBalancer
+  port: 80
+
+database:
+  username: identityiq
+  password: identityiq
+  url: jdbc:mysql://host.docker.internal:3306/identityiq
+
+pluginsDatabase:
+  username: identityiqPlugin
+  password: identityiqPlugin
+  url: jdbc:mysql://host.docker.internal:3306/identityiqPlugin

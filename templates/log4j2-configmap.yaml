@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: log4j2-properties
+data:
+  log4j2.properties: |-
+{{ .Files.Get "log4j2.properties" | indent 4}}
