@@ -42,17 +42,29 @@ Note: you may have used a different image namen than iiq-image to build the dock
 To makes the IdentityIQ Docker image environment agnostic and portable, the docker built from the previous steps does not include ***iiq.properties*** file in the application folder. So we will need to mount the *iiq.properties* (or *log4j2.properties*) to the path defined in Kubernetes volumns via ConfigMap so that the application can access these files. The content of ***iiq.properties*** file is defined in the template file ***template/iiq.properties.tpl***. You should modify this file to update the settings across all the environments. However, environment specific configuration settings in ***iiq.properties*** (such as Database URL, username and password etc.) should be overridden via ***values.yaml*** under the subfolder (such as sandbox, dev, test etc.) of "*env*" folder. Configure the proper values of *values.yaml* for the enviroment (we use sandbox in the demo) you are going to run. 
 
 ### hostPath
-The hostPath Volumn is used to mount the following 2 directories in the host to the corresponding mountPath defined in Kubernates:
+The hostPath Volume is used to mount the following directories in the host to the corresponding mountPath defined in Kubernates. For the first time, create the following directories in local machine:
+
 - **keystore**
   
    Create a new directory (e.g. */Users/bruce.ren/Desktop/share-config/sailpoint/keystore*) in local computer.
    Then modify the file ***env/sandbox/values.yaml*** to update the corresponding field to reflect the location.
+
 - **log file directory** 
 
    Create a new directory (e.g. */Users/bruce.ren/Desktop/share-config/sailpoint/logs*) in local computer.
    Then modify the file **env/sandbox/values.yaml** to update the corresponding field to reflect the location. Please note once this is configured, all the log files (both log4j and tomcat generated) will be written to this folder.
-For the first time, create the following 2 directories in local machine:
 
+- **LCM fulltext index files directory** 
+
+   Create a new directory (e.g. */Users/bruce.ren/Desktop/share-config/sailpoint/iiq-fulltext-index*) in local computer.
+   Then modify the file **values.yaml** or **env/sandbox/values.yaml** to update the corresponding field to reflect the location. Please note the name of directory inside container is controlled by the parameter '*FULL_TEXT_INDEX_PATH*' to create Docker image. 
+
+- **file upload directory** 
+
+   Create a new directory (e.g. */Users/bruce.ren/Desktop/share-config/sailpoint/file-upload*) in local computer.
+   Then modify the file **values.yaml** or **env/sandbox/values.yaml** to update the corresponding field to reflect the location. Please note the name of directory inside container is controlled by the parameter '*UPLOAD_FILE_PATH*' to create Docker image. 
+
+For details about how to create directories in docker image for LCM full text index files and file upload, please refer to [https://github.com/renliangfeng/iiq-container](url). 
 
 ## Install Helm Chart
 Run the following command to deploy the IdentityIQ to Kubernetes cluster.

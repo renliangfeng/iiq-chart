@@ -23,6 +23,18 @@ log:
   #path: /run/desktop/mnt/host/c/sailpoint/logs
   hostPath: /Users/bruce.ren/Desktop/share-config/sailpoint/logs
 
+fullTextIndex:
+  # This value should match the value of parameter 'FULL_TEXT_INDEX_PATH' to create Docker image.
+  # For details, please refer to https://github.com/renliangfeng/iiq-container
+  mountPath: /mnt/iiq-fulltext-index
+  hostPath: /Users/bruce.ren/Desktop/share-config/sailpoint/iiq-fulltext-index
+
+fileUploadPath:
+  # This value should match the value of parameter 'UPLOAD_FILE_PATH' to create Docker image.
+  # For details, please refer to https://github.com/renliangfeng/iiq-container
+  mountPath: /mnt/file-upload
+  hostPath: /Users/bruce.ren/Desktop/share-config/sailpoint/file-upload
+
 spreadAZs:
   enabled: false
 
