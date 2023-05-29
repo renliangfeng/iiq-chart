@@ -73,6 +73,10 @@ spec:
               mountPath: {{ .Values.keystore.mountPath }}
             - name: iiq-log-volume
               mountPath: /usr/local/tomcat/logs
+            - name: fulltext-index-volume
+              mountPath: {{ .Values.fullTextIndex.mountPath }}
+            - name: file-upload-volume
+              mountPath: {{ .Values.fileUploadPath.mountPath }}
       volumes:
         - name: iiq-properties
           configMap:
@@ -87,6 +91,14 @@ spec:
         - name: iiq-log-volume
           hostPath:
             path: {{ .Values.log.hostPath }} 
+            type: Directory
+        - name: fulltext-index-volume
+          hostPath:
+            path: {{ .Values.fullTextIndex.hostPath }} 
+            type: Directory
+        - name: file-upload-volume
+          hostPath:
+            path: {{ .Values.fileUploadPath.hostPath }} 
             type: Directory
 {{- end }}
 {{- end }}
