@@ -66,6 +66,12 @@ The hostPath Volume is used to mount the following directories in the host to th
 
 For details about how to create directories in docker image for LCM full text index files and file upload, please refer to [https://github.com/renliangfeng/iiq-container](url). 
 
+## Environment Variables
+To configure the server time zone or Tomcat JVM Heap size settings, you should modify the file **values.yaml** or **env/sandbox/values.yaml** to update the following field values (one for UI server and other for Task server if you have both deployed to the cluster)
+- servers.ui.env
+- servers.task.env
+
+
 ## Install Helm Chart
 Run the following command to deploy the IdentityIQ to Kubernetes cluster.
 
