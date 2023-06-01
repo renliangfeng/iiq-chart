@@ -56,6 +56,9 @@ resources:
 servers:
   ui:
     env:
+      # Update the following for JVM Heap setting in Tomcat for each environment. Refer to SailPoint IdentityIQ Sizing Guide documents for the proper values. 
+      - name: CATALINA_OPTS
+        value: -Xms256M -Xmx1024M -Dsun.lang.ClassLoader.allowArraySyntax=true -Djava.awt.headless=true
       - name: TZ
         value: Australia/Canberra
       - name: IIQ_CONTAINER_HOSTNAME_DYNAMIC_TYPE
@@ -64,6 +67,8 @@ servers:
         value: "false"
   #task:
   #  env:
+   #   - name: CATALINA_OPTS
+   #     value: -Xms256M -Xmx1024M -Dsun.lang.ClassLoader.allowArraySyntax=true -Djava.awt.headless=true
    #   - name: TZ
     #    value: Australia/Canberra
      # - name: IIQ_CONTAINER_HOSTNAME_DYNAMIC_TYPE
